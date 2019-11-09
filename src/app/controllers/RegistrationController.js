@@ -8,6 +8,14 @@ import Queue from '../../lib/Queue';
 
 class RegistrationController {
   async index(req, res) {
+    const schema = Yup.object().shape({
+      student_id: Yup.number().required(),
+    });
+
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Validation failed' });
+    }
+
     const { student_id } = req.query;
     const registrations = student_id
       ? await Registration.findOne({ where: { student_id } })
@@ -83,11 +91,55 @@ class RegistrationController {
   }
 
   async update(req, res) {
-    return res.json();
+    const schema = Yup.object().shape({
+      plan_id: Yup.number().required(),
+      start_date: Yup.date().required(),
+    });
+
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Validation failed' });
+    }
+
+    const { id } = req.params;
+    const registration = await Registration.findByPk(id);
+    if (!registration) {
+      return res.status(400).json({ error: 'Registration not found' });
+    }
+
+    const { plan_id, start_date } = req.body;
+    const plan = await Plan.findByPk(plan_id);
+    if (!plan) {
+      return res.status(400).json({ error: 'Plan not found' });
+    }
+
+    const { duration } = plan;
+    const end_date = addMonths(parseISO(start_date), duration);
+    const price = plan.price * duration;
+
+    const updatedRegistration = await registration.update({
+      plan_id,
+      start_date,
+      end_date,
+      price,
+    });
+
+    return res.json(updatedRegistration);
   }
 
   async delete(req, res) {
-    return res.json();
+    const { id } = req.params;
+
+    const registration = await Registration.findByPk(id);
+    if (!registration) {
+      return res.status(400).json({ error: 'Registration not found' });
+    }
+
+    const deletedRegistration = await registration.destroy();
+    if (deletedRegistration === 0) {
+      return res.status(400).json({ error: 'Error during delete operation' });
+    }
+
+    return res.json({ success: 'Registration successfully deleted' });
   }
 }
 
