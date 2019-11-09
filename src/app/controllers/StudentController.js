@@ -8,12 +8,9 @@ class StudentController {
       email: Yup.string()
         .email()
         .required(),
-      idade: Yup.number()
-        .integer()
-        .positive()
-        .required(),
-      peso: Yup.number().positive(),
-      altura: Yup.number().positive(),
+      birth_date: Yup.date().required(),
+      weight: Yup.number().positive(),
+      height: Yup.number().positive(),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -28,16 +25,9 @@ class StudentController {
       return res.status(401).json({ error: 'Student already exists.' });
     }
 
-    const { id, name, idade, peso, altura } = await Student.create(req.body);
+    const student = await Student.create(req.body);
 
-    return res.json({
-      id,
-      name,
-      email,
-      idade,
-      peso,
-      altura,
-    });
+    return res.json(student);
   }
 
   async update(req, res) {
@@ -47,12 +37,9 @@ class StudentController {
         .email()
         .required(),
       oldEmail: Yup.string().email(),
-      idade: Yup.number()
-        .integer()
-        .positive()
-        .required(),
-      peso: Yup.number().positive(),
-      altura: Yup.number().positive(),
+      birth_date: Yup.date().required(),
+      weight: Yup.number().positive(),
+      height: Yup.number().positive(),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -77,16 +64,9 @@ class StudentController {
       student = await Student.findOne({ where: { email } });
     }
 
-    const { id, name, idade, peso, altura } = await student.update(req.body);
+    const updatedStudent = await student.update(req.body);
 
-    return res.json({
-      id,
-      name,
-      email,
-      idade,
-      peso,
-      altura,
-    });
+    return res.json(updatedStudent);
   }
 }
 
