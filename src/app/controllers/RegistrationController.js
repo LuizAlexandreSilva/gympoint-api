@@ -69,7 +69,10 @@ class RegistrationController {
         price,
       },
       {
-        include: [Student],
+        include: [
+          { model: Student, as: 'student' },
+          { model: Plan, as: 'plan' },
+        ],
       }
     );
 
